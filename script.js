@@ -1,41 +1,41 @@
-const output = document.getElementById("output");
-const loading = document.getElementById("loading");
-const errorDiv = document.getElementById("error");
-const btn = document.getElementById("download-images-button");
-
-const images = [
+const imageUrls = [
   { url: "https://picsum.photos/id/237/200/300" },
   { url: "https://picsum.photos/id/238/200/300" },
   { url: "https://picsum.photos/id/239/200/300" },
 ];
 
+const downloadButton = document.getElementById('download-images-button');
+const loadingDiv = document.getElementById('loading');
+const errorDiv = document.getElementById('error');
+const outputDiv = document.getElementById('output');
+
 function downloadImage(url) {
   return new Promise((resolve, reject) => {
     const img = new Image();
+    img.src = url;
     img.onload = () => resolve(img);
     img.onerror = () => reject(new Error(`Failed to load image: ${url}`));
-    img.src = url;
   });
 }
 
-async function downloadImages(imageList) {
-  // Clear previous state
-  output.innerHTML = "";
-  errorDiv.textContent = "";
-  loading.style.display = "block";
+function downloadImages(urls) {
+  errorDiv.textContent = '';
+  outputDiv.innerHTML = '';
+  loadingDiv.style.display = 'block';
 
-  try {
-    const imagePromises = imageList.map(img => downloadImage(img.url));
-    const loadedImages = await Promise.all(imagePromises);
+  const promises = urls.map(obj => downloadImage(obj.url)); // ✅ FIXED LINE
 
-    loadedImages.forEach(img => output.appendChild(img));
-  } catch (err) {
-    errorDiv.textContent = err.message;
-  } finally {
-    loading.style.display = "none";
-  }
+  Promise.all(promises)
+    .then(images => {
+      loadingDiv.style.display = 'none';
+      images.forEach(img => outputDiv.appendChild(img));
+    })
+    .catch(error => {
+      loadingDiv.style.display = 'none';
+      errorDiv.textContent = error.message;
+    });
 }
 
-btn.addEventListener("click", () => {
-  downloadImages(images);
+downloadButton.addEventListener('click', () => {
+  downloadImages(imageUrls);
 });
